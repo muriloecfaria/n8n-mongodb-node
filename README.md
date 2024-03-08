@@ -1,4 +1,4 @@
-# n8n-mongodb-node
+# n8n-nodes-mongodb
 n8n node for mongodb
 
 For while only the update operation is avalaible
