@@ -9,7 +9,7 @@ The difference for the native mongodb node of n8n, you can create your filter us
 
 - Update
 
-<img src="./assets/update.png" />
+<img src="./assets/update.PNG" />
 
 ## Installation
 
