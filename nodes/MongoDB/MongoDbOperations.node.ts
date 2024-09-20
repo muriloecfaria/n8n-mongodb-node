@@ -48,60 +48,92 @@ export class MongoDbOperations implements INodeType {
 			const operation = this.getNodeParameter('operation', 0);
 
 			switch (operation) {
-				case 'update':
+				case 'update': {
 					const queryParameter = JSON.parse(
 						this.getNodeParameter('query', 0) as string,
 					) as IDataObject;
 
-					const fields = JSON.parse(this.getNodeParameter('fields', 0) as string) as IDataObject;
+					const updateParameter = JSON.parse(this.getNodeParameter('update', 0) as string) as IDataObject;
 
 					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
-						.updateOne(queryParameter as unknown as Document, { $set: fields });
+						.updateOne(queryParameter as unknown as Document, updateParameter as unknown as Document);
 
 					responseData = [...items];
-
 					break;
-				case "find":
+				}
+				case 'find': {
+					try {
+						const queryParameter = JSON.parse(
+							this.getNodeParameter('query', 0) as string,
+						) as IDataObject;
 
+						let query = mdb
+							.collection(this.getNodeParameter('collection', 0) as string)
+							.find(queryParameter as unknown as Document);
 
-				try {
+						const options = this.getNodeParameter('options', 0);
+						const limit = options.limit as number;
+						const skip = options.skip as number;
+						const sort = options.sort && (JSON.parse(options.sort as string) as Sort);
+						if (skip > 0) {
+							query = query.skip(skip);
+						}
+						if (limit > 0) {
+							query = query.limit(limit);
+						}
+						if (sort && Object.keys(sort).length !== 0 && sort.constructor === Object) {
+							query = query.sort(sort);
+						}
+						const queryResult = await query.toArray();
+
+						responseData = queryResult && queryResult.length
+							? queryResult
+							: {};
+
+					} catch (error) {
+						if (this.continueOnFail()) {
+							responseData = [{ error: (error as JsonObject).message }];
+						} else {
+							throw error;
+						}
+					}
+					break;
+				}
+				case 'insert': {
+					const insertData = JSON.parse(this.getNodeParameter('document', 0) as string) as IDataObject;
+					await mdb
+						.collection(this.getNodeParameter('collection', 0) as string)
+						.insertOne(insertData as unknown as Document);
+					responseData = [...items];
+					break;
+				}
+				case 'replaceOne': {
 					const queryParameter = JSON.parse(
 						this.getNodeParameter('query', 0) as string,
 					) as IDataObject;
 
-					let query = mdb
+					const replaceData = JSON.parse(this.getNodeParameter('document', 0) as string) as IDataObject;
+
+					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
-						.find(queryParameter as unknown as Document);
+						.replaceOne(queryParameter as unknown as Document, replaceData as unknown as Document);
 
-					const options = this.getNodeParameter('options', 0);
-					const limit = options.limit as number;
-					const skip = options.skip as number;
-					const sort = options.sort && (JSON.parse(options.sort as string) as Sort);
-					if (skip > 0) {
-						query = query.skip(skip);
-					}
-					if (limit > 0) {
-						query = query.limit(limit);
-					}
-					if (sort && Object.keys(sort).length !== 0 && sort.constructor === Object) {
-						query = query.sort(sort);
-					}
-					const queryResult = await query.toArray();
-
-					responseData = queryResult && queryResult.length
-						? queryResult
-						: {};
-
-				} catch (error) {
-					if (this.continueOnFail()) {
-						responseData = [{ error: (error as JsonObject).message }];
-					} else {
-						throw error;
-					}
-				}
-
+					responseData = [...items];
 					break;
+				}
+				case 'deleteOne': {
+					const queryParameter = JSON.parse(
+						this.getNodeParameter('query', 0) as string,
+					) as IDataObject;
+
+					await mdb
+						.collection(this.getNodeParameter('collection', 0) as string)
+						.deleteOne(queryParameter as unknown as Document);
+
+					responseData = [...items];
+					break;
+				}
 			}
 		} catch (error) {
 			if (this.continueOnFail()) {

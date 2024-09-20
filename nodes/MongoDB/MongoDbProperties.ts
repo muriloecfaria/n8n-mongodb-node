@@ -8,16 +8,34 @@ export const nodeProperties: INodeProperties[] = [
 		noDataExpression: true,
 		options: [
 			{
-				name: 'Update',
-				value: 'update',
-				description: 'Update documents',
-				action: 'Update documents',
+				name: 'Delete One',
+				value: 'deleteOne',
+				description: 'Delete a document',
+				action: 'Delete a document'
 			},
 			{
 				name: 'Find',
 				value: 'find',
 				description: 'Find documents',
-				action: 'Find documents',
+				action: 'Find documents'
+			},
+			{
+				name: 'Insert',
+				value: 'insert',
+				description: 'Insert a document',
+				action: 'Insert a document'
+			},
+			{
+				name: 'Replace One',
+				value: 'replaceOne',
+				description: 'Replace a document',
+				action: 'Replace a document'
+			},
+			{
+				name: 'Update',
+				value: 'update',
+				description: 'Update documents',
+				action: 'Update documents'
 			}
 		],
 		default: 'find'
@@ -84,7 +102,7 @@ export const nodeProperties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
-				operation: ['update', 'find']
+				operation: ['update', 'find', 'replaceOne', 'deleteOne']
 			},
 		},
 		default: '{}',
@@ -93,8 +111,21 @@ export const nodeProperties: INodeProperties[] = [
 		description: 'MongoDB Find query'
 	},
 	{
-		displayName: 'Fields',
-		name: 'fields',
+		displayName: 'Document (JSON Format)',
+		name: 'document',
+		type: 'json',
+		displayOptions: {
+			show: {
+				operation: ['insert', 'replaceOne'],
+			},
+		},
+		default: '{}',
+		placeholder: '{ "field": "value" }',
+		description: 'The document data to insert or replace',
+	},
+	{
+		displayName: 'Update',
+		name: 'update',
 		type: 'json',
 		displayOptions: {
 			show: {
@@ -102,7 +133,7 @@ export const nodeProperties: INodeProperties[] = [
 			},
 		},
 		default: '{}',
-		placeholder: '{ "birth": {{ $json.variable }} }',
-		description: 'Mapping fields to update'
+		placeholder: '{ "$set": {"birth": {{ $json.variable }} }}',
+		description: 'The update operations to be applied to the document(s)'
 	}
 ];
