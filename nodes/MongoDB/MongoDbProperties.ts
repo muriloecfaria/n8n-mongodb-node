@@ -135,5 +135,18 @@ export const nodeProperties: INodeProperties[] = [
 		default: '{}',
 		placeholder: '{ "$set": {"birth": {{ $json.variable }} }}',
 		description: 'The update operations to be applied to the document(s)'
+	},
+	{
+		displayName: 'Update Options',
+		name: 'updateOptions',
+		type: 'json',
+		displayOptions: {
+			show: {
+				operation: ['update']
+			},
+		},
+		default: '{}',
+		placeholder: '{ "$set": {"birth": {{ $json.variable }} }}',
+		description: 'The update options operations to be applied to the document(s)'
 	}
 ];

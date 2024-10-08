@@ -54,10 +54,11 @@ export class MongoDbOperations implements INodeType {
 					) as IDataObject;
 
 					const updateParameter = JSON.parse(this.getNodeParameter('update', 0) as string) as IDataObject;
+					const updateOptionsParameter = JSON.parse(this.getNodeParameter('updateOptions', 0) as string) as IDataObject;
 
 					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
-						.updateOne(queryParameter as unknown as Document, updateParameter as unknown as Document);
+						.updateOne(queryParameter as unknown as Document, updateParameter as unknown as Document, updateOptionsParameter as unknown as Document);
 
 					responseData = [...items];
 					break;
