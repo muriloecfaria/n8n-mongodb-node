@@ -8,6 +8,12 @@ export const nodeProperties: INodeProperties[] = [
 		noDataExpression: true,
 		options: [
 			{
+				name: 'Aggregate',
+				value: 'aggregate',
+				description: 'Aggregate documents',
+				action: 'Aggregate documents',
+			},
+			{
 				name: 'Delete One',
 				value: 'deleteOne',
 				description: 'Delete a document',
@@ -102,7 +108,7 @@ export const nodeProperties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
-				operation: ['update', 'find', 'replaceOne', 'deleteOne']
+				operation: ['aggregate', 'update', 'find', 'replaceOne', 'deleteOne']
 			},
 		},
 		default: '{}',
