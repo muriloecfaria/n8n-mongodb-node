@@ -60,7 +60,7 @@ export const nodeProperties: INodeProperties[] = [
 		type: 'collection',
 		displayOptions: {
 			show: {
-				operation: ['find'],
+				operation: ['aggregate', 'find'],
 			},
 		},
 		default: {},
