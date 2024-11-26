@@ -49,47 +49,64 @@ export class MongoDbOperations implements INodeType {
 
 			switch (operation) {
 				case 'update': {
-					const queryParameter = JSON.parse(
-						this.getNodeParameter('query', 0) as string,
-					) as IDataObject;
 
-					const updateParameter = JSON.parse(this.getNodeParameter('update', 0) as string) as IDataObject;
-					const updateOptionsParameter = JSON.parse(this.getNodeParameter('updateOptions', 0) as string) as IDataObject;
+					for (let i = 0; i < items.length; i++) {
 
-					await mdb
-						.collection(this.getNodeParameter('collection', 0) as string)
-						.updateOne(queryParameter as unknown as Document, updateParameter as unknown as Document, updateOptionsParameter as unknown as Document);
+						const queryParameter = JSON.parse(
+							this.getNodeParameter('query', i) as string,
+						) as IDataObject;
+
+						const updateParameter = JSON.parse(this.getNodeParameter('update', i) as string) as IDataObject;
+						const updateOptionsParameter = JSON.parse(this.getNodeParameter('updateOptions', i) as string) as IDataObject;
+
+						await mdb
+							.collection(this.getNodeParameter('collection', i) as string)
+							.updateOne(queryParameter as unknown as Document, updateParameter as unknown as Document, updateOptionsParameter as unknown as Document);
+					}
 
 					responseData = [...items];
 					break;
 				}
 				case 'find': {
 					try {
-						const queryParameter = JSON.parse(
-							this.getNodeParameter('query', 0) as string,
-						) as IDataObject;
 
-						let query = mdb
-							.collection(this.getNodeParameter('collection', 0) as string)
-							.find(queryParameter as unknown as Document);
+						const documents: IDataObject[] = [];
 
-						const options = this.getNodeParameter('options', 0);
-						const limit = options.limit as number;
-						const skip = options.skip as number;
-						const sort = options.sort && (JSON.parse(options.sort as string) as Sort);
-						if (skip > 0) {
-							query = query.skip(skip);
-						}
-						if (limit > 0) {
-							query = query.limit(limit);
-						}
-						if (sort && Object.keys(sort).length !== 0 && sort.constructor === Object) {
-							query = query.sort(sort);
-						}
-						const queryResult = await query.toArray();
+						for (let i = 0; i < items.length; i++) {
 
-						responseData = queryResult && queryResult.length
-							? queryResult
+							const queryParameter = JSON.parse(
+								this.getNodeParameter('query', i) as string,
+							) as IDataObject;
+
+							let query = mdb
+								.collection(this.getNodeParameter('collection', i) as string)
+								.find(queryParameter as unknown as Document);
+
+							const options = this.getNodeParameter('options', i);
+							const limit = options.limit as number;
+							const skip = options.skip as number;
+							const sort = options.sort && (JSON.parse(options.sort as string) as Sort);
+							if (skip > 0) {
+								query = query.skip(skip);
+							}
+							if (limit > 0) {
+								query = query.limit(limit);
+							}
+							if (sort && Object.keys(sort).length !== 0 && sort.constructor === Object) {
+								query = query.sort(sort);
+							}
+							const queryResult = await query.toArray();
+
+							if (queryResult && queryResult.length) {
+								for (const entry of queryResult) {
+									documents.push(entry);
+								}
+							}
+							
+						}
+
+						responseData = documents && documents.length
+							? documents
 							: {};
 
 					} catch (error) {
@@ -103,31 +120,43 @@ export class MongoDbOperations implements INodeType {
 				}
 				case 'aggregate': {
 					try {
-						const queryParameter = JSON.parse(
-							this.getNodeParameter('query', 0) as string,
-						) as IDataObject;
 
-						let query = mdb
-							.collection(this.getNodeParameter('collection', 0) as string)
-							.aggregate(queryParameter as unknown as Document[]);
+						const documents: IDataObject[] = [];
 
-						const options = this.getNodeParameter('options', 0);
-						const limit = options.limit as number;
-						const skip = options.skip as number;
-						const sort = options.sort && (JSON.parse(options.sort as string) as Sort);
-						if (skip > 0) {
-							query = query.skip(skip);
-						}
-						if (limit > 0) {
-							query = query.limit(limit);
-						}
-						if (sort && Object.keys(sort).length !== 0 && sort.constructor === Object) {
-							query = query.sort(sort);
-						}
-						const queryResult = await query.toArray();
+						for (let i = 0; i < items.length; i++) {
 
-						responseData = queryResult && queryResult.length
-							? queryResult
+							const queryParameter = JSON.parse(
+								this.getNodeParameter('query', i) as string,
+							) as IDataObject;
+
+							let query = mdb
+								.collection(this.getNodeParameter('collection', i) as string)
+								.aggregate(queryParameter as unknown as Document[]);
+
+							const options = this.getNodeParameter('options', i);
+							const limit = options.limit as number;
+							const skip = options.skip as number;
+							const sort = options.sort && (JSON.parse(options.sort as string) as Sort);
+							if (skip > 0) {
+								query = query.skip(skip);
+							}
+							if (limit > 0) {
+								query = query.limit(limit);
+							}
+							if (sort && Object.keys(sort).length !== 0 && sort.constructor === Object) {
+								query = query.sort(sort);
+							}
+							const queryResult = await query.toArray();
+
+							if (queryResult && queryResult.length) {
+								for (const entry of queryResult) {
+									documents.push(entry);
+								}
+							}
+						}
+
+						responseData = documents && documents.length
+							? documents
 							: {};
 
 					} catch (error) {
@@ -140,35 +169,56 @@ export class MongoDbOperations implements INodeType {
 					break;
 				}
 				case 'insert': {
-					const insertData = JSON.parse(this.getNodeParameter('document', 0) as string) as IDataObject;
+
+					const documents: IDataObject[] = [];
+
+					for (let i = 0; i < items.length; i++) {
+						const insertData = JSON.parse(this.getNodeParameter('document', i) as string) as IDataObject;
+						documents.push(insertData);
+					}
+				
 					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
-						.insertOne(insertData as unknown as Document);
-					responseData = [...items];
+						.insertMany(documents as unknown as Document[]);
+
+					responseData = documents;
 					break;
 				}
 				case 'replaceOne': {
-					const queryParameter = JSON.parse(
-						this.getNodeParameter('query', 0) as string,
-					) as IDataObject;
 
-					const replaceData = JSON.parse(this.getNodeParameter('document', 0) as string) as IDataObject;
+					const documents: IDataObject[] = [];
 
-					await mdb
-						.collection(this.getNodeParameter('collection', 0) as string)
-						.replaceOne(queryParameter as unknown as Document, replaceData as unknown as Document);
+					for (let i = 0; i < items.length; i++) {
 
-					responseData = [...items];
+						const queryParameter = JSON.parse(
+							this.getNodeParameter('query', i) as string,
+						) as IDataObject;
+
+						const replaceData = JSON.parse(this.getNodeParameter('document', i) as string) as IDataObject;
+
+						await mdb
+							.collection(this.getNodeParameter('collection', i) as string)
+							.replaceOne(queryParameter as unknown as Document, replaceData as unknown as Document);
+
+						documents.push(replaceData);
+					}	
+
+					responseData = documents;
 					break;
 				}
 				case 'deleteOne': {
-					const queryParameter = JSON.parse(
-						this.getNodeParameter('query', 0) as string,
-					) as IDataObject;
 
-					await mdb
-						.collection(this.getNodeParameter('collection', 0) as string)
-						.deleteOne(queryParameter as unknown as Document);
+					for (let i = 0; i < items.length; i++) {
+
+						const queryParameter = JSON.parse(
+							this.getNodeParameter('query', i) as string,
+						) as IDataObject;
+
+						await mdb
+							.collection(this.getNodeParameter('collection', i) as string)
+							.deleteOne(queryParameter as unknown as Document);
+
+					}
 
 					responseData = [...items];
 					break;
